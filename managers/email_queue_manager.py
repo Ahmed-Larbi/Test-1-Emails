@@ -1,3 +1,4 @@
+import queue
 import time
 import random
 from multiprocessing.dummy import Pool
@@ -45,15 +46,9 @@ class EmailQueueManager:
             Pendingpool.close()
             priorityPool.join()
             Pendingpool.join()
+            Newqueue = responsePending + responsePriority
             with open('sent.txt', 'w') as f:
-                for response in responsePending:
-                    if response:
-                        if response['status'] == 'sent':
-                            if response['email']['prority'] == 1:
-                                f.write(f"{response['email']['id']},{response['email']['attempts']},True \n")
-                            else:
-                                f.write(f"{response['email']['id']},{response['email']['attempts']},False \n")
-                for response in responsePriority:
+                for response in Newqueue:
                     if response:
                         if response['status'] == 'sent':
                             if response['email']['prority'] == 1:
