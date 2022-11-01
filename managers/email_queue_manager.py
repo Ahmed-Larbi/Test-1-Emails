@@ -1,5 +1,7 @@
 import time
 import random
+from multiprocessing.dummy import Pool
+from urllib import response
 
 from models.generator.email import Email
 
@@ -17,25 +19,57 @@ class EmailQueueManager:
         self.__queue_processor()
 
     def __queue_processor(self):
+        pendingEmail = []
+        priotrityMail = []
         while True:
             self.__queue += self.__generate_emails(
                 quantity=random.randint(1, 10)
             )
-
+            print(len(self.__queue))
+            start = time.perf_counter()
             for idx, email in enumerate(self.__queue):
                 if email["status"] == "sent":
                     del self.__queue[idx]
                     continue
-
-                response = self.__send_email(
-                    email=email
-                )
-
-                self.__queue[idx] = response["email"]
-
-            print(f'pending emails to send: {len(self.__queue)}')
+                elif email['status'] == 'pending':
+                    pendingEmail.append(email)
+                    if email['prority'] == 1:
+                        priotrityMail.append(email)
+                    
+                    
+            priorityPool = Pool()
+            responsePriority = priorityPool.map(self.__send_email, priotrityMail)
+            Pendingpool = Pool()
+            responsePending = Pendingpool.map(self.__send_email, pendingEmail)
+            priorityPool.close()
+            Pendingpool.close()
+            priorityPool.join()
+            Pendingpool.join()
+            with open('sent.txt', 'w') as f:
+                for response in responsePending:
+                    if response:
+                        if response['status'] == 'sent':
+                            print("Here1")
+                            if response['email']['prority'] == 1:
+                                f.write(f"{response['email']['id']},{response['email']['attempts']},True \n")
+                            else:
+                                f.write(f"{response['email']['id']},{response['email']['attempts']},False \n")
+            with open('sent.txt', 'w') as f:
+                for response in responsePriority:
+                    if response:
+                        if response['status'] == 'sent':
+                            print("Here2")
+                            if response['email']['prority'] == 1:
+                                f.write(f"{response['email']['id']},{response['email']['attempts']},True \n")
+                            else:
+                                f.write(f"{response['email']['id']},{response['email']['attempts']},False \n")
+                            
+            
 
             time.sleep(0.5)
+            finish = time.perf_counter()
+            print(f'{finish-start} Seconds')
+            break
 
     # !!! You can't edit this method
     # This method generate an array with many emails that you should send after.

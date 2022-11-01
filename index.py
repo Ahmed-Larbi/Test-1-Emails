@@ -1,4 +1,5 @@
 from managers.email_queue_manager import EmailQueueManager
 
 #
-EmailQueueManager()
+if __name__ == '__main__':
+    a = EmailQueueManager()
