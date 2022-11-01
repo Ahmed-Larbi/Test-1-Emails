@@ -49,24 +49,21 @@ class EmailQueueManager:
                 for response in responsePending:
                     if response:
                         if response['status'] == 'sent':
-                            print("Here1")
                             if response['email']['prority'] == 1:
                                 f.write(f"{response['email']['id']},{response['email']['attempts']},True \n")
                             else:
                                 f.write(f"{response['email']['id']},{response['email']['attempts']},False \n")
-            with open('sent.txt', 'w') as f:
                 for response in responsePriority:
                     if response:
                         if response['status'] == 'sent':
-                            print("Here2")
                             if response['email']['prority'] == 1:
                                 f.write(f"{response['email']['id']},{response['email']['attempts']},True \n")
                             else:
                                 f.write(f"{response['email']['id']},{response['email']['attempts']},False \n")
+            f.close()
                             
             
 
-            time.sleep(0.5)
             finish = time.perf_counter()
             print(f'{finish-start} Seconds')
             break
